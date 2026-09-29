@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# frontdoor
+/corpus/
+feedback.jsonl
+/deck/render/
+!.env.example

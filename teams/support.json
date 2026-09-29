@@ -1,0 +1,19 @@
+{
+  "slug": "support",
+  "name": "Support",
+  "illustrative": true,
+  "description": "Answers product questions for people handling customer tickets.",
+  "sources": {
+    "kinds": ["page", "news"],
+    "boostKinds": { "page": 1.3 }
+  },
+  "guidance": "You are helping a support specialist. Lead with the direct answer, then the steps or details. Keep it short enough to paste into a reply.",
+  "samples": [
+    "Does Vendor Credentialing check workers' compensation coverage, or only general liability?",
+    "A customer asks what the AI Operations Agent actually audits in a lease file. What do we tell them?",
+    "Our Oak Street property shows the wrong ledger balance after move-out. Can you fix it?",
+    "My rent payment was charged twice this month. Who do I contact?",
+    "Can someone from the account team call me about our renewal?",
+    "Is it working?"
+  ]
+}
