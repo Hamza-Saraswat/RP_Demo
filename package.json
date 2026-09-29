@@ -10,10 +10,10 @@
     "ingest": "tsx ingest/run.ts",
     "knowledge:build": "tsx --env-file=.env.local scripts/build-knowledge.ts",
     "knowledge:lint": "tsx scripts/lint-knowledge.ts",
-    "index:build": "tsx scripts/build-index.ts",
     "eval": "tsx --env-file=.env.local scripts/eval.ts",
     "deck": "node scripts/build-deck.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "ask": "tsx --env-file=.env.local scripts/ask.ts"
   },
   "dependencies": {
     "cheerio": "^1.2.0",

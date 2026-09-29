@@ -163,7 +163,8 @@ export function mapPath(opts: { familySlug?: string; productId?: string; queueId
   if (family) nodes.push(toNode(family, "family"));
   for (const slug of product?.platforms ?? []) {
     const platform = b.entities.get(`platforms/${slug}`);
-    if (platform) nodes.push(toNode(platform, "platform"));
+    // Some platforms share a name with a family; showing both adds nothing.
+    if (platform && platform.title !== family?.title) nodes.push(toNode(platform, "platform"));
   }
   const queue = b.entities.get(opts.queueId ?? (familySlug ? `queues/${familySlug}` : "queues/human-triage"));
   if (queue) nodes.push(toNode(queue, "owner"));

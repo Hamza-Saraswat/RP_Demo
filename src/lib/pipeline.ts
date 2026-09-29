@@ -177,6 +177,7 @@ export async function* run(
   let decisionCalls = 0;
   let writerCalls = 0;
   const flags: string[] = [];
+  let followUp = false;
   const previous = [...history].reverse().find((turn) => turn.role === "user")?.text ?? null;
 
   const finish = function* (partial: Omit<Result, "team" | "totals" | "flags" | "map"> & { queue?: string | null }): Generator<Step, Result> {
@@ -202,7 +203,7 @@ export async function* run(
       // Built by code from the decisions above, so it cannot say anything the trace does not show.
       summary: [
         `Asked: ${message.trim()}`,
-        ...(previous && history.length ? [`Earlier in the conversation: ${previous.trim()}`] : []),
+        ...(followUp && previous ? [`Follows on from: ${previous.trim()}`] : []),
         `Product family: ${family ? `${family.title} (${Math.round(family.confidence * 100)}% sure)` : "not determined"}`,
         `Product: ${product ? product.title : "not determined"}`,
       ],
@@ -219,6 +220,7 @@ export async function* run(
   const route = await routePreview(message, previous, q);
   cost += route.cost;
   decisionCalls += 1;
+  followUp = route.followUp;
   yield route;
   const checks = Object.fromEntries(route.checks.map((c) => [c.id, c.p]));
   const familyEntity = route.choice === NONE ? undefined : b.entities.get(`families/${route.choice}`);
