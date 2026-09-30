@@ -4,14 +4,20 @@
   "illustrative": true,
   "description": "Answers product questions for people preparing for customer conversations.",
   "sources": {
-    "kinds": ["page", "news", "case-study"],
-    "boostKinds": { "case-study": 1.6 }
+    "kinds": [
+      "page",
+      "news",
+      "case-study"
+    ],
+    "boostKinds": {
+      "case-study": 1.6
+    }
   },
   "guidance": "You are helping a salesperson prepare for a call. Lead with the outcome a customer gets, and use published customer results with their numbers when the sources contain them. Never state a result the sources do not contain.",
   "samples": [
-    "Which customers have published results from automated lease audits?",
-    "A prospect runs student housing. Which products fit, and is there a customer story?",
+    "A prospect runs student housing. Is there anything for splitting utility bills between roommates?",
     "What is the difference between Lumina Ascent and Lumina Connect?",
-    "What can I say about how the AI Leasing Agent performs?"
+    "What can I say about how the AI Leasing Agent performs?",
+    "What results did Summit get from AI lease audits?"
   ]
 }
