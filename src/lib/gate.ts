@@ -50,29 +50,22 @@ export function routeGate(input: RouteInput, t: Thresholds): RouteDecision {
     };
   }
 
-  if (family.choice === NONE) {
-    return {
-      outcome: "escalate",
-      queue: "queues/human-triage",
-      reasons: ["The question does not match any product family."],
-      flags: [],
-    };
-  }
-  if (family.confidence < t.familySure) {
-    return {
-      outcome: "escalate",
-      queue: "queues/human-triage",
-      reasons: ["Not sure enough which product family this is about."],
-      flags: [],
-    };
-  }
-  if (topTwoGap(family.probabilities) <= t.familyCloseGap) {
-    return {
-      outcome: "escalate",
-      queue: "queues/human-triage",
-      reasons: ["Two product families were too close to call."],
-      flags: [],
-    };
+  const wantsPerson = yes("asks_for_person") || yes("needs_account_data") || yes("billing_or_contract");
+  const unclear =
+    family.choice === NONE
+      ? "The question does not match any product family."
+      : family.confidence < t.familySure
+        ? "Not sure enough which product family this is about."
+        : topTwoGap(family.probabilities) <= t.familyCloseGap
+          ? "Two product families were too close to call."
+          : null;
+  if (unclear) {
+    // A question about how something works may still be answerable: search every family,
+    // and let the evidence check decide. Anything else goes to a person now.
+    if (yes("wants_how_to") && !wantsPerson) {
+      return { outcome: "search", queue: "queues/human-triage", reasons: [], flags: ["family unclear"] };
+    }
+    return { outcome: "escalate", queue: "queues/human-triage", reasons: [unclear], flags: [] };
   }
 
   const queue = `queues/${family.choice}`;
@@ -86,7 +79,15 @@ export function routeGate(input: RouteInput, t: Thresholds): RouteDecision {
 }
 
 /** Second gate: runs after the evidence check. */
-export function evidenceGate(kept: number, queue: string | null): RouteDecision {
+export function evidenceGate(kept: number, queue: string | null, familyUnclear = false): RouteDecision {
+  if (kept === 0 && familyUnclear) {
+    return {
+      outcome: "escalate",
+      queue: "queues/human-triage",
+      reasons: ["No product family matched, and no source passage holds an answer."],
+      flags: [],
+    };
+  }
   if (kept === 0) {
     return {
       outcome: "handoff",
@@ -108,7 +109,7 @@ export type ClaimDecision = { keep: boolean[]; withhold: boolean; reason: string
  * A contradiction, or too many removed claims, withholds the whole answer.
  */
 export function claimGate(perClaim: ClaimVerdict[][], t: Thresholds): ClaimDecision {
-  if (!perClaim.length) return { keep: [], withhold: true, reason: "The writer produced no claims." };
+  if (!perClaim.length) return { keep: [], withhold: true, reason: "The writer produced nothing usable, so nothing is shown." };
 
   const contradicted = perClaim.some((verdicts) =>
     verdicts.some((v) => v.verdict === "contradicts" && v.confidence >= t.claimSupported),

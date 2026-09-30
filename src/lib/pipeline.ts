@@ -8,10 +8,10 @@ import { bundle, offeringsIn, namedIn, mapPath, type Entity, type MapNode } from
 import { search, type Hit } from "./search";
 import { routeGate, evidenceGate, claimGate, NONE, type Outcome, type Thresholds, type ClaimVerdict } from "./gate";
 import type { Team } from "./teams";
-import v1 from "./questions/v1.json";
+import v3 from "./questions/v3.json";
 
-export type QuestionSet = typeof v1;
-export const DEFAULT_QUESTIONS: QuestionSet = v1;
+export type QuestionSet = typeof v3;
+export const DEFAULT_QUESTIONS: QuestionSet = v3;
 
 export type Turn = { role: "user" | "assistant"; text: string };
 
@@ -79,22 +79,29 @@ export type Result = {
 };
 
 const WrittenAnswer = z.object({
-  claims: z.array(z.object({ text: z.string().min(3).max(600), cites: z.array(z.number().int()).max(4) })).max(8),
-  not_covered: z.string().max(400).nullable().optional(),
+  claims: z
+    .array(z.object({ text: z.string().min(3).transform((v) => v.slice(0, 700)), cites: z.array(z.number().int()) }))
+    .transform((v) => v.slice(0, 8)),
+  // Trimmed, never rejected: a long note must not throw away a good answer.
+  not_covered: z
+    .string()
+    .transform((v) => (v.length > 420 ? `${v.slice(0, 420).replace(/\s+\S*$/, "")}…` : v))
+    .nullable()
+    .optional(),
 });
 
 const BASE_RULES = `You answer questions about RealPage products for an internal team, using only the numbered source passages you are given.
 
 Rules. These always win over team guidance:
 1. Use only facts stated in the passages. No outside knowledge, no guesses.
-2. Every claim cites the passage numbers that state it.
-3. If the passages answer only part of the question, answer that part and say plainly in "not_covered" what they do not cover.
+2. Every claim cites the passage numbers that state it. A claim with no citation is deleted before anyone sees it.
+3. If the passages answer only part of the question, answer that part and say in "not_covered", in one or two sentences, what they do not cover.
 4. Write in your own words: short, plain sentences. No marketing language.
 5. Never promise an action, a timeline, or a price.
 
 Reply with JSON only:
 {"claims":[{"text":"one or two sentences","cites":[1]}],"not_covered":"what the passages do not cover, or null"}
-Give 2 to 5 claims.`;
+Give 2 to 5 claims. Put the direct answer first. Each claim states facts from one or two passages, not a summary of all of them.`;
 
 function familyQuestion(q: QuestionSet): Question {
   const b = bundle();
@@ -224,7 +231,7 @@ export async function* run(
   yield route;
   const checks = Object.fromEntries(route.checks.map((c) => [c.id, c.p]));
   const familyEntity = route.choice === NONE ? undefined : b.entities.get(`families/${route.choice}`);
-  const family: Result["family"] = familyEntity
+  let family: Result["family"] = familyEntity
     ? { slug: route.choice, title: familyEntity.title, confidence: route.confidence }
     : null;
 
@@ -238,9 +245,11 @@ export async function* run(
   // 4. Product. Code decides when the message names exactly one product in the chosen family.
   let product: Result["product"] = null;
   let productEntity: Entity | undefined;
-  if (family) {
-    const inFamily = offeringsIn(family.slug, b);
-    const namedHere = named.filter((e) => e.family === family.slug);
+  if (family && !routed.flags.includes("family unclear")) {
+    const familySlug = family.slug;
+    const familyTitle = family.title;
+    const inFamily = offeringsIn(familySlug, b);
+    const namedHere = named.filter((e) => e.family === familySlug);
     if (namedHere.length === 1) {
       productEntity = namedHere[0];
       product = { id: productEntity.id, title: productEntity.title, confidence: 1 };
@@ -251,7 +260,7 @@ export async function* run(
       criteria.general = q.product.general;
       criteria[NONE] = q.product.none;
       const d = await decide(
-        { message, previous_message: previous, products_named: named.map((e) => e.title), family: family.title },
+        { message, previous_message: previous, products_named: named.map((e) => e.title), family: familyTitle },
         { product: { type: "choice", instructions: q.product.instructions, criteria } },
       );
       cost += d.cost;
@@ -299,7 +308,9 @@ export async function* run(
     limit: 12,
     kinds: team.sources.kinds,
     boostKinds: team.sources.boostKinds,
-    boostUrls: [productEntity?.resource, familyEntity?.resource].filter((u): u is string => !!u),
+    boostUrls: routed.flags.includes("family unclear")
+      ? named.map((e) => e.resource)
+      : [productEntity?.resource, familyEntity?.resource].filter((u): u is string => !!u),
   });
   yield { kind: "search", query, candidates: hits.length, urls: [...new Set(hits.map((h) => h.url))], ms: Date.now() - searchAt };
 
@@ -336,47 +347,63 @@ export async function* run(
     }));
   yield { kind: "evidence", considered: hits.length, kept: sources, ms: Date.now() - evidenceAt, cost: judged.reduce((s, j) => s + j.cost, 0), calls: judged.length };
 
-  const evidence = evidenceGate(sources.length, routed.queue);
+  // When routing could not place the question, the best source can: its page belongs to a product.
+  if (!product && sources.length && (!family || routed.flags.includes("family unclear"))) {
+    const owner = [...b.entities.values()].find(
+      (e) => (e.type === "Product" || e.type === "Agent" || e.type === "Family") && e.resource === sources[0].url,
+    );
+    const placedFamily = owner?.type === "Family" ? owner : owner?.family ? b.entities.get(`families/${owner.family}`) : undefined;
+    if (placedFamily) {
+      family = { slug: placedFamily.id.replace("families/", ""), title: placedFamily.title, confidence: sources[0].p };
+      if (owner && owner.type !== "Family") product = { id: owner.id, title: owner.title, confidence: sources[0].p };
+      routed.queue = `queues/${family.slug}`;
+      flags.push("placed by its source");
+    }
+  }
+
+  const evidence = evidenceGate(sources.length, routed.queue, routed.flags.includes("family unclear"));
   flags.push(...evidence.flags);
   yield { kind: "gate", stage: "evidence", outcome: evidence.outcome, queue: evidence.queue, reasons: evidence.reasons, flags: evidence.flags };
   if (evidence.outcome !== "answer") {
     return yield* finish({
-      outcome: "handoff",
-      family,
+      outcome: evidence.outcome === "escalate" ? "escalate" : "handoff",
+      family: routed.flags.includes("family unclear") ? null : family,
       product,
       answer: null,
-      handoff: handoffTo(routed.queue, evidence.reasons, hits, family, product),
-      queue: routed.queue,
+      handoff: handoffTo(evidence.queue, evidence.reasons, hits, family, product),
+      queue: evidence.queue,
     });
   }
 
-  // 7. Claude writes, from the kept passages only.
+  // 7. Claude writes, from the kept passages only. One retry: a dropped call should not cost an answer.
   let written: z.infer<typeof WrittenAnswer> | null = null;
-  try {
-    const out = await write({
-      json: true,
-      maxTokens: 900,
-      messages: [
-        { role: "system", content: `${BASE_RULES}\n\nTeam guidance (${team.name}): ${team.guidance}` },
-        {
-          role: "user",
-          content:
-            `${route.followUp && previous ? `Earlier question: ${previous}\n` : ""}Question: ${message}\n\nSource passages:\n` +
-            sources.map((s) => `[${s.n}] ${s.page} / ${s.heading}\n${s.text}`).join("\n\n"),
-        },
-      ],
-    });
-    cost += out.cost;
-    writerCalls += 1;
-    yield { kind: "write", model: out.model, ms: out.latencyMs, cost: out.cost };
-    if (process.env.FRONTDOOR_DEBUG) console.error(`[writer] ${out.text}`);
-    const parsed = WrittenAnswer.safeParse(JSON.parse(out.text.replace(/^```(?:json)?\s*|\s*```$/g, "").trim()));
-    if (parsed.success) written = parsed.data;
-    else if (process.env.FRONTDOOR_DEBUG) console.error(`[writer] did not match: ${parsed.error.issues[0]?.path.join(".")} ${parsed.error.issues[0]?.message}`);
-  } catch (err) {
-    if (process.env.FRONTDOOR_DEBUG) console.error(`[writer] failed: ${err instanceof Error ? err.message : err}`);
-    written = null;
+  for (let attempt = 1; attempt <= 2 && !written; attempt++) {
+    try {
+      const out = await write({
+        json: true,
+        maxTokens: 900,
+        messages: [
+          { role: "system", content: `${BASE_RULES}\n\nTeam guidance (${team.name}): ${team.guidance}` },
+          {
+            role: "user",
+            content:
+              `${route.followUp && previous ? `Earlier question: ${previous}\n` : ""}Question: ${message}\n\nSource passages:\n` +
+              sources.map((s) => `[${s.n}] ${s.page} / ${s.heading}\n${s.text}`).join("\n\n"),
+          },
+        ],
+      });
+      cost += out.cost;
+      writerCalls += 1;
+      yield { kind: "write", model: out.model, ms: out.latencyMs, cost: out.cost };
+      if (process.env.FRONTDOOR_DEBUG) console.error(`[writer] ${out.text}`);
+      const parsed = WrittenAnswer.safeParse(JSON.parse(out.text.replace(/^```(?:json)?\s*|\s*```$/g, "").trim()));
+      if (parsed.success) written = parsed.data;
+      else if (process.env.FRONTDOOR_DEBUG) console.error(`[writer] did not match: ${parsed.error.issues[0]?.path.join(".")} ${parsed.error.issues[0]?.message}`);
+    } catch (err) {
+      if (process.env.FRONTDOOR_DEBUG) console.error(`[writer] failed: ${err instanceof Error ? err.message : err}`);
+    }
   }
+  if (!written) flags.push("writer failed");
 
   const claims: Claim[] = (written?.claims ?? [])
     .map((c) => ({ text: c.text.trim(), cites: [...new Set(c.cites)].filter((n) => n >= 1 && n <= sources.length) }))

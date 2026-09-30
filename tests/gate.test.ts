@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { routeGate, evidenceGate, claimGate, type Thresholds } from "../src/lib/gate";
-import v1 from "../src/lib/questions/v1.json";
+import v3 from "../src/lib/questions/v3.json";
 
-const t = v1.thresholds as Thresholds;
+const t = v3.thresholds as Thresholds;
 const sure = { choice: "spend-and-vendor-management", confidence: 0.95, probabilities: { "spend-and-vendor-management": 0.95, "property-management": 0.03, none: 0.02 } };
 const quiet = { resident_or_vendor: 0.1, needs_account_data: 0.1, billing_or_contract: 0.1, asks_for_person: 0.1, reports_broken: 0.1, wants_how_to: 0.9 };
 
@@ -30,15 +30,31 @@ describe("routeGate", () => {
     expect(d.reasons).toHaveLength(2);
   });
 
-  it("escalates when no family fits", () => {
-    const d = routeGate({ family: { choice: "none", confidence: 0.9, probabilities: { none: 0.9 } }, checks: quiet }, t);
+  const vague = { ...quiet, wants_how_to: 0.2 };
+
+  it("escalates when no family fits and it is not a how-it-works question", () => {
+    const d = routeGate({ family: { choice: "none", confidence: 0.9, probabilities: { none: 0.9 } }, checks: vague }, t);
     expect(d.outcome).toBe("escalate");
     expect(d.queue).toBe("queues/human-triage");
   });
 
   it("escalates when the family is a coin flip", () => {
     const d = routeGate(
-      { family: { choice: "a", confidence: 0.7, probabilities: { a: 0.5, b: 0.45, none: 0.05 } }, checks: quiet },
+      { family: { choice: "a", confidence: 0.7, probabilities: { a: 0.5, b: 0.45, none: 0.05 } }, checks: vague },
+      t,
+    );
+    expect(d.outcome).toBe("escalate");
+  });
+
+  it("still searches a how-it-works question when the family is unclear", () => {
+    const d = routeGate({ family: { choice: "none", confidence: 0.5, probabilities: { none: 0.5, a: 0.3 } }, checks: quiet }, t);
+    expect(d.outcome).toBe("search");
+    expect(d.flags).toContain("family unclear");
+  });
+
+  it("never searches on an unclear family when the writer wants a person", () => {
+    const d = routeGate(
+      { family: { choice: "none", confidence: 0.9, probabilities: { none: 0.9 } }, checks: { ...quiet, asks_for_person: 0.9 } },
       t,
     );
     expect(d.outcome).toBe("escalate");
@@ -56,6 +72,11 @@ describe("evidenceGate", () => {
     const d = evidenceGate(0, "queues/x");
     expect(d.outcome).toBe("handoff");
     expect(d.flags).toContain("docs gap");
+  });
+  it("escalates instead when the family was never clear", () => {
+    const d = evidenceGate(0, "queues/human-triage", true);
+    expect(d.outcome).toBe("escalate");
+    expect(d.flags).not.toContain("docs gap");
   });
   it("answers when at least one passage holds evidence", () => {
     expect(evidenceGate(1, "queues/x").outcome).toBe("answer");

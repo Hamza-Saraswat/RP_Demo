@@ -1,0 +1,104 @@
+{
+  "version": 2,
+  "model": "typesafe/jev-1.13",
+  "note": "Second draft, after reading the v1 misses. See docs/iteration-log.md for each change and why.",
+  "thresholds": {
+    "familySure": 0.6,
+    "familyCloseGap": 0.2,
+    "productSure": 0.6,
+    "checkYes": 0.6,
+    "evidenceKeep": 0.55,
+    "evidenceMax": 5,
+    "claimSupported": 0.6,
+    "maxRemovedShare": 0.5
+  },
+  "family": {
+    "instructions": "Which product family is `message` about? If `products_named` is not empty, choose the family those products belong to. Choose by what the message is about, even when it also asks about customers, results, or comparisons.",
+    "none": "The message is not about any listed family, or it gives too little to tell."
+  },
+  "product": {
+    "instructions": "Which single product is `message` about?",
+    "general": "The message is about this family in general, or about several of its products at once.",
+    "none": "The message is about something that is not in this list."
+  },
+  "checks": {
+    "resident_or_vendor": {
+      "label": "Writer is a resident or vendor",
+      "instructions": "Is `message` written by a renter, rental applicant, or outside vendor speaking about their own situation?",
+      "criteria": {
+        "true": {
+          "what": "The writer speaks in the first person as a tenant, applicant, or vendor about something that happened to them.",
+          "examples": [
+            "my rent payment was charged twice",
+            "my application was denied",
+            "we are a plumbing company trying to get approved"
+          ]
+        },
+        "false": {
+          "what": "The writer is staff asking about a product, or the message does not say who they are. Mentioning residents, renters, or vendors is not enough.",
+          "examples": [
+            "who pays for the points in the resident rewards program",
+            "our vendor's certificate was rejected",
+            "how do residents pay rent online",
+            "a customer asks how long screening takes"
+          ]
+        }
+      }
+    },
+    "needs_account_data": {
+      "label": "Needs their account records",
+      "instructions": "Would answering `message` require looking up the writer's own records, such as a specific account, property, payment, invoice, order, ticket, or login?",
+      "criteria": {
+        "true": "The answer depends on data only their account holds. Examples: 'why was this payment declined', 'where is order 4471', 'reset my password', 'our Oak Street property shows the wrong balance'.",
+        "false": "The answer is the same for every customer. Examples: 'what does the product check', 'does it support student housing', 'how does the audit work'."
+      }
+    },
+    "billing_or_contract": {
+      "label": "About billing or a contract",
+      "instructions": "Is `message` about what the writer pays the software company: price, an invoice from the software company, a contract, a renewal, a cancellation, or a refund?",
+      "criteria": {
+        "true": "Examples: 'how much does it cost', 'we were billed twice for our subscription', 'we want to cancel', 'when does our contract renew'.",
+        "false": "Money handled inside the product is not billing. Examples: 'how do residents pay rent', 'how does invoice approval work', 'vendor payments'."
+      }
+    },
+    "asks_for_person": {
+      "label": "Asks for a person",
+      "instructions": "Does the writer of `message` ask to talk to, be contacted by, or be sent to a person or a team?",
+      "criteria": {
+        "true": "Examples: 'who do I talk to', 'can someone call me', 'I need an account manager', 'please escalate this'.",
+        "false": "The writer asks a question and wants the answer itself."
+      }
+    },
+    "reports_broken": {
+      "label": "Reports something broken",
+      "instructions": "Does the writer of `message` report that something is failing, broken, down, or showing an error right now?",
+      "criteria": {
+        "true": "Examples: 'the page will not load', 'we get an error when saving', 'sync stopped yesterday'.",
+        "false": "The writer asks how something works or what a product does."
+      }
+    },
+    "wants_how_to": {
+      "label": "Asks how it works",
+      "instructions": "Is the writer of `message` asking what a product does, whether it supports something, or how it works?",
+      "criteria": {
+        "true": "Examples: 'does it handle affordable housing', 'what is checked during an audit', 'how do self-guided tours work'.",
+        "false": "The writer wants an action taken on their account, or wants a person."
+      }
+    }
+  },
+  "evidence": {
+    "instructions": "Does `passage.text` contain information that directly helps answer `question`?",
+    "criteria": {
+      "true": "The passage states facts that answer the question or a clear part of it.",
+      "false": "The passage is on a related topic but does not answer the question, or it is only a slogan or a call to action."
+    }
+  },
+  "citation": {
+    "instructions": "How does `passage` relate to `claim`?",
+    "criteria": {
+      "supports": "The passage states the same fact as the claim, or the claim is a fair restatement of what the passage says.",
+      "contradicts": "The passage states the opposite of the claim.",
+      "says_nothing": "The passage does not state what the claim says."
+    }
+  }
+}

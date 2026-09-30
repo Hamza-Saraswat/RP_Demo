@@ -7,7 +7,7 @@ import { runQuestion, type QuestionSet, type Result, type Step } from "../src/li
 import { team } from "../src/lib/teams";
 
 const ROOT = path.resolve(__dirname, "..");
-const CONCURRENCY = 4;
+const CONCURRENCY = 3;
 const CONFIDENT = 0.8;
 
 type Case = {
