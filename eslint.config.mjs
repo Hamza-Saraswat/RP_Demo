@@ -7,6 +7,9 @@ const eslintConfig = defineConfig([
   ...nextTs,
   // Override default ignores of eslint-config-next.
   globalIgnores([
+    // Plain Node scripts for the deck; not part of the app.
+    "scripts/build-deck.js",
+    "scripts/shots.mjs",
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
