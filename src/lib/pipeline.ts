@@ -55,7 +55,7 @@ export type Step =
       cost: number;
     }
   | { kind: "gate"; stage: "route" | "evidence" | "claims"; outcome: Outcome | "search"; queue: string | null; reasons: string[]; flags: string[] }
-  | { kind: "search"; query: string; candidates: number; ms: number }
+  | { kind: "search"; query: string; candidates: number; urls: string[]; ms: number }
   | { kind: "evidence"; considered: number; kept: Source[]; ms: number; cost: number; calls: number }
   | { kind: "write"; model: string; ms: number; cost: number }
   | { kind: "check"; claims: CheckedClaim[]; removed: number; ms: number; cost: number; calls: number }
@@ -301,7 +301,7 @@ export async function* run(
     boostKinds: team.sources.boostKinds,
     boostUrls: [productEntity?.resource, familyEntity?.resource].filter((u): u is string => !!u),
   });
-  yield { kind: "search", query, candidates: hits.length, ms: Date.now() - searchAt };
+  yield { kind: "search", query, candidates: hits.length, urls: [...new Set(hits.map((h) => h.url))], ms: Date.now() - searchAt };
 
   // 6. Jev: one small request per passage, all at once.
   const evidenceAt = Date.now();
@@ -369,9 +369,12 @@ export async function* run(
     cost += out.cost;
     writerCalls += 1;
     yield { kind: "write", model: out.model, ms: out.latencyMs, cost: out.cost };
+    if (process.env.FRONTDOOR_DEBUG) console.error(`[writer] ${out.text}`);
     const parsed = WrittenAnswer.safeParse(JSON.parse(out.text.replace(/^```(?:json)?\s*|\s*```$/g, "").trim()));
     if (parsed.success) written = parsed.data;
-  } catch {
+    else if (process.env.FRONTDOOR_DEBUG) console.error(`[writer] did not match: ${parsed.error.issues[0]?.path.join(".")} ${parsed.error.issues[0]?.message}`);
+  } catch (err) {
+    if (process.env.FRONTDOOR_DEBUG) console.error(`[writer] failed: ${err instanceof Error ? err.message : err}`);
     written = null;
   }
 
