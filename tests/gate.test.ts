@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { routeGate, evidenceGate, claimGate, type Thresholds } from "../src/lib/gate";
+import { readJson } from "../src/lib/pipeline";
 import v3 from "../src/lib/questions/v3.json";
 
 const t = v3.thresholds as Thresholds;
@@ -117,5 +118,18 @@ describe("claimGate", () => {
 
   it("withholds when the writer produced nothing", () => {
     expect(claimGate([], t).withhold).toBe(true);
+  });
+});
+
+describe("reading the writer's reply", () => {
+  it("reads a complete reply", () => {
+    expect(readJson('{"claims":[{"text":"A.","cites":[1]}],"not_covered":null}')).toEqual({ claims: [{ text: "A.", cites: [1] }], not_covered: null });
+  });
+  it("keeps whole claims from a reply that was cut off", () => {
+    const cut = '{"claims":[{"text":"A \\"quoted\\" fact.","cites":[1,2]},{"text":"B.","cites":[3]},{"text":"C was cut';
+    expect(readJson(cut)).toEqual({ claims: [{ text: 'A "quoted" fact.', cites: [1, 2] }, { text: "B.", cites: [3] }], not_covered: null });
+  });
+  it("gives up when no claim arrived whole", () => {
+    expect(() => readJson('{"claims":[{"text":"cut')).toThrow();
   });
 });

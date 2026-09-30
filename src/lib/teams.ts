@@ -34,7 +34,8 @@ export function loadTeams(dir: string = TEAMS_DIR): Map<string, Team> {
 }
 
 export function teams(): Map<string, Team> {
-  if (!cached) cached = loadTeams();
+  // Team files are tiny. In development, read them fresh so an edit shows up on the next request.
+  if (!cached || process.env.NODE_ENV !== "production") cached = loadTeams();
   return cached;
 }
 

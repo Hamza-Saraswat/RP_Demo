@@ -143,7 +143,7 @@ export default function Evals() {
                     <p className="text-[14px] text-text">{row.question}</p>
                     {!row.pass && (
                       <p className="mt-0.5 text-[12.5px] text-muted">
-                        Expected {row.expected}. {row.notes.join("; ")}. The safe outcome happened, but a colleague would have answered it.
+                        Expected {row.expected}, got {row.got}. The safe outcome happened, but a colleague would have answered it.
                       </p>
                     )}
                   </div>

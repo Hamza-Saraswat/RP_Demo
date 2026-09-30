@@ -59,6 +59,15 @@ Ten questions, written after tuning stopped, committed before their first run, a
 
 **What I would do next:** add a check for "asks for examples or customers" and treat it like a how-it-works question. I have not made that change, because changing the system after seeing a held-out miss and then quoting the same held-out number would make the number meaningless. It needs a fresh held-out set.
 
+## After the held-out run
+
+These changes were made after the held-out questions ran. The held-out score above was not re-run and does not include them.
+
+**7. Long answers were cut off and lost.**
+- Question, Sales team: "What can I say about how the AI Leasing Agent performs?"
+- What happened: the Sales guidance asks for published customer results, so the answer ran long, hit the writer's length limit, and arrived as broken JSON. Both attempts failed and nothing was shown.
+- Change: a higher length limit, a 50-word cap per sentence in the writer's rules, and recovery of whole sentences from a reply that was cut off. Recovered sentences still go through the sentence check.
+
 ## Retrieval: was keyword search enough?
 
 The rule set before the first run: if the right page is missing from the search results for more than 15% of answerable questions, add query rewriting.

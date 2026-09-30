@@ -15,9 +15,9 @@
   },
   "guidance": "You are helping a salesperson prepare for a call. Lead with the outcome a customer gets, and use published customer results with their numbers when the sources contain them. Never state a result the sources do not contain.",
   "samples": [
-    "A prospect runs student housing. Is there anything for splitting utility bills between roommates?",
-    "What is the difference between Lumina Ascent and Lumina Connect?",
+    "What results did Summit get with the AI Operations Agent?",
     "What can I say about how the AI Leasing Agent performs?",
-    "What results did Summit get from AI lease audits?"
+    "A prospect runs student housing. Is there anything for splitting utility bills between roommates?",
+    "What is the difference between Lumina Ascent and Lumina Connect?"
   ]
 }

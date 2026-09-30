@@ -88,7 +88,8 @@ function score(c: Case, result: Result, steps: Step[]): Row {
 
   const pageFound = e.source && searchStep ? searchStep.urls.some((u) => samePage(u, e.source!)) : e.source ? false : null;
   const pageKept = e.source && evidenceStep ? evidenceStep.kept.some((s) => samePage(s.url, e.source!)) : e.source ? false : null;
-  if (e.source && pageFound === false) notes.push("search did not return the right page");
+  if (e.source && !searchStep) notes.push("no search ran");
+  else if (e.source && pageFound === false) notes.push("search did not return the right page");
   else if (e.source && pageKept === false) notes.push("evidence check dropped the right page");
 
   const lower = (answerText ?? "").toLowerCase();

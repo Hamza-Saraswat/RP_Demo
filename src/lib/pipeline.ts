@@ -101,7 +101,21 @@ Rules. These always win over team guidance:
 
 Reply with JSON only:
 {"claims":[{"text":"one or two sentences","cites":[1]}],"not_covered":"what the passages do not cover, or null"}
-Give 2 to 5 claims. Put the direct answer first. Each claim states facts from one or two passages, not a summary of all of them.`;
+Give 2 to 5 claims, each under 50 words. Put the direct answer first. Each claim states facts from one or two passages, not a summary of all of them.`;
+
+/** Reads the writer's JSON. If the reply was cut off mid-way, keeps the claims that arrived whole. */
+export function readJson(text: string): unknown {
+  const body = text.replace(/^```(?:json)?\s*|\s*```$/g, "").trim();
+  try {
+    return JSON.parse(body);
+  } catch {
+    const claims = [...body.matchAll(/\{\s*"text"\s*:\s*"(?:[^"\\]|\\.)*"\s*,\s*"cites"\s*:\s*\[[\d,\s]*\]\s*\}/g)].map((m) =>
+      JSON.parse(m[0]),
+    );
+    if (!claims.length) throw new Error("no complete claim in the reply");
+    return { claims, not_covered: null };
+  }
+}
 
 function familyQuestion(q: QuestionSet): Question {
   const b = bundle();
@@ -381,7 +395,7 @@ export async function* run(
     try {
       const out = await write({
         json: true,
-        maxTokens: 900,
+        maxTokens: 1400,
         messages: [
           { role: "system", content: `${BASE_RULES}\n\nTeam guidance (${team.name}): ${team.guidance}` },
           {
@@ -396,7 +410,7 @@ export async function* run(
       writerCalls += 1;
       yield { kind: "write", model: out.model, ms: out.latencyMs, cost: out.cost };
       if (process.env.FRONTDOOR_DEBUG) console.error(`[writer] ${out.text}`);
-      const parsed = WrittenAnswer.safeParse(JSON.parse(out.text.replace(/^```(?:json)?\s*|\s*```$/g, "").trim()));
+      const parsed = WrittenAnswer.safeParse(readJson(out.text));
       if (parsed.success) written = parsed.data;
       else if (process.env.FRONTDOOR_DEBUG) console.error(`[writer] did not match: ${parsed.error.issues[0]?.path.join(".")} ${parsed.error.issues[0]?.message}`);
     } catch (err) {
