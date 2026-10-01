@@ -139,7 +139,7 @@ function table(s, header, rows, { x = M, y = 1.9, w = W - 2 * M, colW, rowH = 0.
 {
   const s = slide({
     notes:
-      "Hi, I'm Hamza. You asked for something built with AI that helps RealPage scale. I built this in one day from your public website. But the build is the small part. What I want to show you is how I work, and the foundation I've spent the last year building, because that is what I would bring.",
+      "Hi, I'm Hamza. You asked for something built with AI that helps RealPage scale. I built this in one day from your public website. I'll show you what it does, how it works, and why I made each choice. Then I'll show you where the pattern comes from.",
   });
   s.addText("Frontdoor", { x: M, y: 2.0, w: 8, h: 1.3, fontFace: SERIF, fontSize: 80, color: C.text, margin: 0 });
   s.addText("One question in. A cited answer, or the right owner.", { x: M, y: 3.35, w: 9, h: 0.5, fontFace: SANS, fontSize: 22, color: C.muted, margin: 0 });
@@ -149,77 +149,13 @@ function table(s, header, rows, { x = M, y = 1.9, w = W - 2 * M, colW, rowH = 0.
   s.addText("AI Engineer  ·  hamza-saraswat.com  ·  github.com/Hamza-Saraswat/RP_Demo", { x: M, y: 5.6, w: 9, h: 0.3, fontFace: MONO, fontSize: 11, color: C.muted, margin: 0 });
 }
 
-// ------------------------------------------------------------------ 2. How I work
+// ------------------------------------------------------------------ 2. The problem
 {
   const s = slide({
-    kicker: "How I work",
-    title: "Get it in front of the team fast. Fix what they actually hit.",
-    notes:
-      "This is how I work. I ship a small first version fast, I put it in front of the team that will use it, and I let them break it. Then I fix what they hit. There is no point building for problems nobody has. And I measure honestly, because a number I can't reproduce is worth nothing. Hold onto this loop: you'll see it again in the results.",
-  });
-  chips(s, ["Ship small", "Team tests it", "They tell me what broke", "I fix that"], { y: 1.95, h: 0.7, size: 15, fill: C.high });
-  bullets(
-    s,
-    [
-      ["Ship small.", "The first version reaches the team in days, not months."],
-      ["Let them break it.", "Real questions find problems a spec never will."],
-      ["Fix what they hit.", "I do not build for problems nobody has."],
-      ["Measure honestly.", "Every number comes from a run anyone can repeat."],
-    ],
-    { y: 3.05, w: W - 2 * M, gap: 0.95, size: 19 },
-  );
-}
-
-// ------------------------------------------------------------------ 3. The foundation
-{
-  const s = slide({
-    kicker: "What I built over the past year",
-    title: "A foundation first. Then one team at a time.",
-    notes:
-      "At FieldPulse I spent the past year building a foundation. At the bottom are connectors into the company's systems: the data warehouse through the Metabase API, Slack history that I backfilled so years of tribal knowledge is searchable, Jira and Linear tickets, the wiki, the help center. On top of that sits one universal knowledge layer: one search source, every answer cited. On top of that, one agent harness: a single agent core, where each team gets its own tools, its own prompt, and its own evals. And then the teams.",
-  });
-  layers(s, [
-    { label: "Teams", name: "Who it serves", parts: ["IT support", "Customer support", "Customer success", "Sales (next)"] },
-    { label: "Layer 2", name: "Company-wide agent harness", parts: ["One agent core", "Per-team tools", "Versioned prompts", "Transcript evals"], strong: true },
-    { label: "Layer 1", name: "Universal knowledge layer", parts: ["One search source", "Every answer cited", "Verified answers saved"], strong: true },
-    { label: "Connectors", name: "Into company systems", parts: ["Data warehouse (Metabase API)", "Slack history, backfilled", "Jira and Linear tickets", "Wiki and help center"] },
-  ]);
-}
-
-// ------------------------------------------------------------------ 4. What it made possible
-{
-  const s = slide({
-    kicker: "Why the foundation matters",
-    title: "A new team is a connector and a prompt.",
-    notes:
-      "Here is why the foundation matters. Once it exists, adding a team is small: a connector and a prompt, not a new project. That is how one Slack bot became fourteen tools across eight departments since January. The Slack assistant has answered over twenty-two hundred product questions, ninety-four percent without pulling in product or engineering. The email agent triages over two hundred support emails a week. The onboarding app has taken a hundred and eighty-three customers through setup in a median of nine minutes.",
-  });
-  const tw = (W - 2 * M - 3 * 0.25) / 4;
-  const tiles = [
-    { big: "14", label: "AI tools in production", note: "Across eight departments. Up from one Slack bot in January.", tone: C.cyan },
-    { big: "2,200+", label: "Questions answered", note: "In Slack, for 110+ employees. 94% without pulling in product or engineering." },
-    { big: "200+", label: "Support emails a week", note: "Triaged by the email support agent." },
-    { big: "183", label: "Customer accounts set up", note: "Through the onboarding app since June. Median nine minutes." },
-  ];
-  tiles.forEach((t, i) => tile(s, { x: M + i * (tw + 0.25), y: 1.95, w: tw, h: 2.0, ...t }));
-  bullets(
-    s,
-    [
-      ["Shared knowledge.", "Every tool starts with the same grounded company knowledge on day one."],
-      ["Shared rules.", "Answers come only from sources, always cited. No team can loosen that."],
-      ["Real feedback.", "Each team's own questions drive what gets built next."],
-    ],
-    { y: 4.35, w: W - 2 * M, gap: 0.78, size: 15 },
-  );
-}
-
-// ------------------------------------------------------------------ 5. RealPage from the outside
-{
-  const s = slide({
-    kicker: "RealPage, from the outside",
+    kicker: "The problem",
     title: "Many products. One front door.",
     notes:
-      "Now RealPage. I'm on the outside, so I only used what is public. Over fifty companies acquired in two decades. Sixty-four products and agents on your own website menu, in ten families. Forty-two thousand customers. And the public support page splits by who you are, not by which product you're asking about. So every question has to find its owner. I don't know how you handle that internally. But it's the same shape of problem I've been solving.",
+      "Start with the problem. I'm on the outside, so I used only what is public. Over fifty companies acquired in two decades. Sixty-four products and agents on your own website menu. Forty-two thousand customers. And the public support page splits by who you are, not by which product you're asking about. So every question has to find its owner. I don't know how you handle that internally. That is the problem I picked.",
   });
   const tw = (W - 2 * M - 3 * 0.25) / 4;
   const tiles = [
@@ -236,13 +172,13 @@ function table(s, header, rows, { x = M, y = 1.9, w = W - 2 * M, colW, rowH = 0.
   );
 }
 
-// ------------------------------------------------------------------ 6. The same approach for RealPage
+// ------------------------------------------------------------------ 3. What I built
 {
   const s = slide({
-    kicker: "The same approach, for RealPage",
-    title: "The same foundation in miniature, built in one day.",
+    kicker: "What I built",
+    title: "One front door, in four layers, built in one day.",
     notes:
-      "So I built the same foundation in miniature. Same four layers. The connector reads two hundred and twenty-one public pages. The knowledge layer is a company map: a hundred and sixty-six markdown files, plus thirteen hundred searchable passages. The agent core decides, finds, writes, and checks. And two team profiles run on that one core. On day one inside RealPage, the only layer that changes is the bottom one: swap public pages for internal sources.",
+      "Here is what I built. I call it Frontdoor. You ask about any product, and you get a cited answer or you get sent to the right owner. It has four layers. At the bottom, a connector reads two hundred and twenty-one public pages. Above that, a knowledge layer: a company map of a hundred and sixty-six markdown files, plus thirteen hundred searchable passages. Above that, one agent core that decides, finds, writes, and checks. On top, two team profiles on that one core. Let me show you.",
   });
   layers(s, [
     { label: "Teams", name: "Two profiles, one core", parts: ["Support", "Sales", "Adding a team is adding a file"] },
@@ -252,7 +188,7 @@ function table(s, header, rows, { x = M, y = 1.9, w = W - 2 * M, colW, rowH = 0.
   ]);
 }
 
-// ------------------------------------------------------------------ 7. Demo
+// ------------------------------------------------------------------ 4. Demo
 {
   const s = slide({
     kicker: "Demo",
@@ -273,7 +209,7 @@ function table(s, header, rows, { x = M, y = 1.9, w = W - 2 * M, colW, rowH = 0.
   );
 }
 
-// ------------------------------------------------------------------ 8. How I use Jev
+// ------------------------------------------------------------------ 5. How I use Jev
 {
   const s = slide({
     kicker: "Why I made each choice  ·  1 of 3",
@@ -307,7 +243,7 @@ function table(s, header, rows, { x = M, y = 1.9, w = W - 2 * M, colW, rowH = 0.
   );
 }
 
-// ------------------------------------------------------------------ 9. Retrieval ladder
+// ------------------------------------------------------------------ 6. Retrieval ladder
 {
   const s = slide({
     kicker: "Why I made each choice  ·  2 of 3",
@@ -337,7 +273,7 @@ function table(s, header, rows, { x = M, y = 1.9, w = W - 2 * M, colW, rowH = 0.
   );
 }
 
-// ------------------------------------------------------------------ 10. Knowledge store ladder
+// ------------------------------------------------------------------ 7. Knowledge store ladder
 {
   const s = slide({
     kicker: "Why I made each choice  ·  3 of 3",
@@ -366,13 +302,13 @@ function table(s, header, rows, { x = M, y = 1.9, w = W - 2 * M, colW, rowH = 0.
   );
 }
 
-// ------------------------------------------------------------------ 11. Results
+// ------------------------------------------------------------------ 8. Results
 {
   const s = slide({
     kicker: "Results",
     title: `${held.overall.right} of ${held.overall.n} on questions it had never seen.`,
     notes:
-      "Results. I wrote thirty questions and tuned against them. First run, twenty-eight of thirty. I read the misses, made fixes, got twenty-nine. One of my fixes had broken something. I fixed that and got thirty. That's the loop from my first slide. But a tuning score flatters, so I wrote ten fresh questions, committed them, and ran them once. Nine of ten. The one it missed, it sent to a person when it could have answered. And across every question that needed a person, it never answered when it shouldn't have. I know what I'd change to catch that miss. I haven't, because changing it and quoting the same number would make the number meaningless.",
+      "Results. I wrote thirty questions and tuned against them. First run, twenty-eight of thirty. I read the misses, made fixes, got twenty-nine. One of my fixes had broken something. I fixed that and got thirty. That is how I work: ship it, test it, fix what broke. But a tuning score flatters, so I wrote ten fresh questions, committed them, and ran them once. Nine of ten. The one it missed, it sent to a person when it could have answered. And across every question that needed a person, it never answered when it shouldn't have. I know what I'd change to catch that miss. I haven't, because changing it and quoting the same number would make the number meaningless.",
   });
   const tw = (W - 2 * M - 3 * 0.25) / 4;
   const tiles = [
@@ -393,13 +329,56 @@ function table(s, header, rows, { x = M, y = 1.9, w = W - 2 * M, colW, rowH = 0.
   );
 }
 
-// ------------------------------------------------------------------ 12. Day one
+// ------------------------------------------------------------------ 9. Where this comes from
+{
+  const s = slide({
+    kicker: "Where this pattern comes from",
+    title: "This is the pattern I run in production.",
+    notes:
+      "This was not a one-off. It is a small version of what I built at FieldPulse over the past year. Same four layers. Connectors into the company's systems: the data warehouse through the Metabase API, Slack history that I backfilled so years of tribal knowledge is searchable, Jira and Linear tickets, the wiki, the help center. One knowledge layer on top: one search source, every answer cited. One agent harness on top of that: a single core, where each team gets its own tools, prompt, and evals. Then the teams.",
+  });
+  layers(s, [
+    { label: "Teams", name: "Who it serves", parts: ["IT support", "Customer support", "Customer success", "Sales (next)"] },
+    { label: "Layer 2", name: "Company-wide agent harness", parts: ["One agent core", "Per-team tools", "Versioned prompts", "Transcript evals"], strong: true },
+    { label: "Layer 1", name: "Universal knowledge layer", parts: ["One search source", "Every answer cited", "Verified answers saved"], strong: true },
+    { label: "Connectors", name: "Into company systems", parts: ["Data warehouse (Metabase API)", "Slack history, backfilled", "Jira and Linear tickets", "Wiki and help center"] },
+  ]);
+}
+
+// ------------------------------------------------------------------ 10. How I work, and what it produced
+{
+  const s = slide({
+    kicker: "How I work, and what it produced",
+    title: "A new team is a connector and a prompt.",
+    notes:
+      "Once that foundation exists, a new team is a connector and a prompt, not a new project. That is how one Slack bot became fourteen tools across eight departments since January. The Slack assistant has answered over twenty-two hundred product questions. The email agent triages two hundred support emails a week. The onboarding app has set up a hundred and eighty-three customers. And the way I work is the loop you just saw in my results: ship small, let the team break it, fix what they hit. I don't build for problems nobody has.",
+  });
+  const tw = (W - 2 * M - 3 * 0.25) / 4;
+  const tiles = [
+    { big: "14", label: "AI tools in production", note: "Across eight departments. Up from one Slack bot in January.", tone: C.cyan },
+    { big: "2,200+", label: "Questions answered", note: "In Slack, for 110+ employees. 94% without pulling in product or engineering." },
+    { big: "200+", label: "Support emails a week", note: "Triaged by the email support agent." },
+    { big: "183", label: "Customer accounts set up", note: "Through the onboarding app since June. Median nine minutes." },
+  ];
+  tiles.forEach((t, i) => tile(s, { x: M + i * (tw + 0.25), y: 1.95, w: tw, h: 2.0, ...t }));
+  chips(s, ["Ship small", "Team tests it", "They tell me what broke", "I fix that"], { y: 4.3, h: 0.6, size: 14, fill: C.high });
+  bullets(
+    s,
+    [
+      ["Fix what they hit.", "The first version reaches the team in days. I do not build for problems nobody has."],
+      ["Shared rules.", "Answers come only from sources, always cited. No team can loosen that."],
+    ],
+    { y: 5.25, w: W - 2 * M, gap: 0.72, size: 15 },
+  );
+}
+
+// ------------------------------------------------------------------ 11. Day one
 {
   const s = slide({
     kicker: "Day one inside RealPage",
     title: "Swap the sources. Pick one team. Measure.",
     notes:
-      "So here's day one. Swap the public pages for internal sources: that's the bottom layer, nothing else changes. Pick one team and ship them a first version that week. Let them break it, and fix what they hit. Measure with their questions, not mine. And after that, the same foundation takes on document workflows: read the document, check it against the requirements, explain every gap at once, and send the unclear ones to a person. That's what I'd bring. Thank you.",
+      "So here is day one inside RealPage. Swap the public pages for internal sources: that's the bottom layer, nothing else changes. Pick one team and ship them a first version that week. Let them break it, and fix what they hit. Measure with their questions, not mine. And after that, the same foundation takes on document workflows: read the document, check it against the requirements, explain every gap at once, and send the unclear ones to a person. That's what I'd bring. Thank you.",
   });
   bullets(
     s,

@@ -14,10 +14,10 @@
   },
   "guidance": "You are helping a support specialist. Lead with the direct answer, then the steps or details. Keep it short enough to paste into a reply.",
   "samples": [
-    "Does Vendor Credentialing check workers' compensation coverage, or only general liability?",
     "What does the AI Operations Agent check in a lease audit?",
     "Our Oak Street property shows the wrong ledger balance after move-out. Can you fix it?",
     "My rent payment was charged twice this month. Who do I contact?",
+    "Does Vendor Credentialing check workers' compensation coverage, or only general liability?",
     "Is it working?"
   ]
 }
