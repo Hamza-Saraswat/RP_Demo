@@ -93,7 +93,7 @@ What is the difference between Lumina Ascent and Lumina Connect?
 1. Type question 1 slowly. Point at the right side before sending. Send. (35 s)
 2. Click question 2. (15 s)
 3. Switch to Sales. Click question 4. (30 s)
-4. Click **Evals** in the header. "These are the numbers on my results slide." (10 s)
+4. Optional: click **Company map** in the header. "This is the map behind the routing." (10 s)
 
 Use 3, 5, and 6 if you have more time or want a second take.
 
@@ -104,7 +104,7 @@ Use 3, 5, and 6 if you have more time or want a second take.
 - [ ] Browser at 100% zoom, window about 1440 wide, bookmarks bar hidden, other tabs closed.
 - [ ] Team is set to **Support**.
 - [ ] Notifications off.
-- [ ] The deck is open on slide 4, ready to go to slide 5 after the demo.
+- [ ] The deck is open on slide 3. After the demo you go to slide 4.
 - [ ] Record a backup take of the demo alone. If a live call fails, cut to it.
 
 ## If something goes wrong
@@ -117,4 +117,4 @@ Use 3, 5, and 6 if you have more time or want a second take.
 
 ## Leave this one out
 
-"Which customers have published results from automated lease audits?" is the known miss on the results slide. It goes to a person. Use it only if you want to show the miss on purpose.
+"Which customers have published results from automated lease audits?" is a known miss. It goes to a person when it could have been answered. Name a product in the question and it works.

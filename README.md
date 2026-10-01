@@ -55,7 +55,7 @@ Both models are reached through OpenRouter with one key.
 |---|---|
 | Teams | `teams/*.json`. Two profiles on one core. Adding a team is adding a file. |
 | Agent core | `src/lib/pipeline.ts`, with the rules in `src/lib/gate.ts` |
-| Knowledge layer | `knowledge/`: 166 markdown files. Plus a passage index built at startup. |
+| Knowledge layer | `knowledge/`: 157 markdown files. Plus a passage index built at startup. |
 | Connector | `ingest/`: reads 221 public pages from the site's sitemaps and menu |
 
 ## Results
@@ -90,7 +90,7 @@ Each is written up in [docs/decisions.md](docs/decisions.md), with the alternati
 | Choice | Chosen | Why |
 |---|---|---|
 | Retrieval | Keyword search plus an evidence check | 1,323 passages. It found the right page for every answerable question where a search ran. |
-| Knowledge store | Markdown files in the Open Knowledge Format | 166 entities. People can read and correct them, and git keeps the history. |
+| Knowledge store | Markdown files in the Open Knowledge Format | 157 entities. People can read and correct them, and git keeps the history. |
 | Structure | Read from the site's own menu | Never guessed. Where the menu is silent, Jev decides and its confidence is written on the file. |
 | Handoff summary | Built by code | It cannot say anything the trace does not show. |
 

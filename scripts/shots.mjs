@@ -20,6 +20,8 @@ async function ask(question, { team, file, livePause = false }) {
     await page.waitForFunction(() => document.body.innerText.includes("WHAT KIND OF QUESTION") || document.body.innerText.includes("What kind of question"), { timeout: 15000 });
     await new Promise((r) => setTimeout(r, 900));
     await page.screenshot({ path: `${OUT}${file}-typing.png` });
+    // The side panel on its own, for the slide that explains the decision model.
+    await page.screenshot({ path: `${OUT}jev-panel.png`, clip: { x: 1000, y: 59, width: 440, height: 530 } });
   }
   await page.keyboard.press("Enter");
   await page.waitForFunction(() => document.body.innerText.includes("decision calls"), { timeout: 90000 });

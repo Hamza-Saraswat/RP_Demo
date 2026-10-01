@@ -23,7 +23,7 @@ Each one records what was chosen, what else was on the table, and when the other
 
 **Chosen:** one markdown file per entity, in the Open Knowledge Format. A small header block, plain links between files, and a sentence of prose around each link saying what the relationship is. The map on screen is drawn from those links.
 
-**Why:** 166 entities. Files live in git, so every change has an author and a diff. A person can read and correct one without a tool. Anything a script generates sits above a marker line; hand-written notes below it survive a rebuild.
+**Why:** 157 entities. Files live in git, so every change has an author and a diff. A person can read and correct one without a tool. Anything a script generates sits above a marker line; hand-written notes below it survive a rebuild.
 
 | Option | Use it when |
 |---|---|
